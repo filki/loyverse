@@ -74,3 +74,17 @@ class Client:
             self._receipts = Receipts(self._api)
 
         return self._receipts
+    @property
+    def categories(self):
+        """
+        Categories endpoint
+
+        Returns:
+            categories (loyverse.endpoints.Categories): Categories endpoint wrapper
+        """
+
+        if self._categories is None:
+            from loyverse.endpoints import Categories
+            self._categories = Categories(self._api)
+
+        return self._categories
