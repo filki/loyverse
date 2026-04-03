@@ -44,6 +44,8 @@ setup(name=NAME,
       url=HOMEPAGE,
       packages=[
           'loyverse',
+          'loyverse.endpoints',
+          'loyverse.utils',
       ],
       maintainer=MAINTAINER,
       maintainer_email=MAINTAINER_EMAIL,
