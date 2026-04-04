@@ -8,6 +8,7 @@ The root url for all Loyverse API requests is https://api.loyverse.com/v1.0.
 import os
 import requests
 from loyverse.exceptions import AccessTokenMissingError
+from typing import Optional
 
 
 class Api:
@@ -15,7 +16,7 @@ class Api:
     Base API properties for all endpoints
     """
 
-    def __init__(self, access_token: str = None):
+    def __init__(self, access_token: Optional[str] = None):
         """
         Api initialization
 
@@ -25,23 +26,25 @@ class Api:
             Initializes the hostname, version and name, as well as the headers containing the access token
         """
 
-        self.name = 'loyverse'
-        self.version = '1.0'
-        self.url = 'https://api.loyverse.com/v1.0'
+        self.name = "loyverse"
+        self.version = "1.0"
+        self.url = "https://api.loyverse.com/v1.0"
 
         if access_token is None:
             try:
-                self._access_token = os.getenv('LOYVERSE_ACCESS_TOKEN')
+                self._access_token = os.getenv("LOYVERSE_ACCESS_TOKEN")
             except AccessTokenMissingError:
-                raise AccessTokenMissingError('LOYVERSE_ACCESS_TOKEN not found in environment variables.')
+                raise AccessTokenMissingError(
+                    "LOYVERSE_ACCESS_TOKEN not found in environment variables."
+                )
         else:
             self._access_token = access_token
 
-        self._header = {
-            'Authorization': f'Bearer {self._access_token}'
-        }
+        self._header = {"Authorization": f"Bearer {self._access_token}"}
 
-    def request(self, method: str, path: str, params: dict = None) -> dict:
+    def request(
+        self, method: str, path: str, params: Optional[dict] = None
+    ) -> Optional[dict]:
         """
         API request method
 
@@ -53,13 +56,13 @@ class Api:
         Returns:
             response (dict): parsed JSON response
         """
-
-        if path == '' or path is None:
+        assert isinstance(params, dict)
+        if path == "" or path is None:
             url = self.url
         else:
-            url = f'{self.url}/{path}'
+            url = f"{self.url}/{path}"
 
-        if method.lower() == 'get':
+        if method.lower() == "get":
             response = self.get_request(url, params)
         else:
             # TODO: Implement PUT, PATCH, DELETE, POST methods
@@ -83,7 +86,7 @@ class Api:
 
         limit_max = 250
         if params is not None:
-            params['limit'] = limit_max
+            params["limit"] = limit_max
 
         cursor = True
         response_full = dict()
@@ -93,10 +96,10 @@ class Api:
             response.raise_for_status()
             response = response.json()
 
-            if 'cursor' in response:
+            if "cursor" in response:
                 params = {
-                    'cursor': response['cursor'],
-                    'limit': limit_max,
+                    "cursor": response["cursor"],
+                    "limit": limit_max,
                 }
             else:
                 cursor = False

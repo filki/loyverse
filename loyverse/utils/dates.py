@@ -4,6 +4,7 @@ Date (datetime objects) manipulation methods
 
 import pytz
 from datetime import datetime
+from typing import Optional
 
 
 def add_timezone(date: datetime, timezone_id: str) -> datetime:
@@ -25,7 +26,7 @@ def add_timezone(date: datetime, timezone_id: str) -> datetime:
     return date_local
 
 
-def utc_isoformat(date: datetime, timezone_id: str = None) -> str:
+def utc_isoformat(date: datetime, timezone_id: Optional[str] = None) -> str:
     """
     Format datetime object using the ISO8601 format to UTC timezone
 
@@ -42,12 +43,14 @@ def utc_isoformat(date: datetime, timezone_id: str = None) -> str:
         date_aware = date
 
         if date.tzinfo is None:
-            raise ValueError('Either a timezone-aware date or a timezone-id has to be passed in.')
+            raise ValueError(
+                "Either a timezone-aware date or a timezone-id has to be passed in."
+            )
     else:
         date_aware = add_timezone(date, timezone_id)
 
     date_utc = date_aware.astimezone(pytz.utc)
-    date_str = date_utc.isoformat(sep='T', timespec='milliseconds')[:23] + 'Z'
+    date_str = date_utc.isoformat(sep="T", timespec="milliseconds")[:23] + "Z"
 
     return date_str
 
@@ -75,4 +78,6 @@ def day_end(date: datetime) -> datetime:
         date_end (datetime): timestamp for end of the given date
     """
 
-    return datetime(date.year, date.month, date.day, 23, 59, 59, 999999, tzinfo=date.tzinfo)
+    return datetime(
+        date.year, date.month, date.day, 23, 59, 59, 999999, tzinfo=date.tzinfo
+    )

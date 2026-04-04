@@ -13,18 +13,25 @@ Possible requests:
 from datetime import datetime, timezone
 from loyverse.api import Api
 from loyverse.utils.dates import utc_isoformat, day_start, day_end
+from typing import Optional
 
 
 class Customers:
-
     def __init__(self, api: Api):
         self._api = api
-        self._path = 'customers'
+        self._path = "customers"
 
-    def get_by_query(self, customer_ids: list = None, email: str = None,
-                     created_at_min: datetime = None, created_at_max: datetime = None,
-                     updated_at_min: datetime = None, updated_at_max: datetime = None,
-                     limit: int = 250, cursor: str = None) -> dict:
+    def get_by_query(
+        self,
+        customer_ids: Optional[list] = None,
+        email: Optional[str] = None,
+        created_at_min: Optional[datetime] = None,
+        created_at_max: Optional[datetime] = None,
+        updated_at_min: Optional[datetime] = None,
+        updated_at_max: Optional[datetime] = None,
+        limit: int = 250,
+        cursor: Optional[str] = None,
+    ) -> Optional[dict]:
         """
         Retrieves customers that respect the specific query criteria passed in. A detailed description of the query
         parameters is available `here <https://developer.loyverse.com/docs/#tag/Customers/paths/~1customers/get>`_.
@@ -45,32 +52,32 @@ class Customers:
         params = dict()
 
         if customer_ids is not None:
-            params['customer_ids'] = ','.join(customer_ids)
+            params["customer_ids"] = ",".join(customer_ids)
 
         if email is not None:
-            params['email'] = email
+            params["email"] = email
 
         if created_at_min is not None:
-            params['created_at_min'] = utc_isoformat(created_at_min)
+            params["created_at_min"] = utc_isoformat(created_at_min)
 
         if created_at_max is not None:
-            params['created_at_max'] = utc_isoformat(created_at_max)
+            params["created_at_max"] = utc_isoformat(created_at_max)
 
         if updated_at_min is not None:
-            params['updated_at_min'] = utc_isoformat(updated_at_min)
+            params["updated_at_min"] = utc_isoformat(updated_at_min)
 
         if updated_at_max is not None:
-            params['updated_at_max'] = utc_isoformat(updated_at_max)
+            params["updated_at_max"] = utc_isoformat(updated_at_max)
 
         if limit is not None:
-            params['limit'] = limit
+            params["limit"] = limit
 
         if cursor is not None:
-            params['cursor'] = cursor
+            params["cursor"] = cursor
 
-        return self._api.request('GET', self._path, params=params)
+        return self._api.request("GET", self._path, params=params)
 
-    def get_by_id(self, customer_id: str) -> dict:
+    def get_by_id(self, customer_id: str) -> Optional[dict]:
         """
         Retrieves the customer information for specific customer ID
 
@@ -80,9 +87,9 @@ class Customers:
             response (dict): formatted customer information (JSON)
         """
 
-        return self._api.request('GET', f'{self._path}/{customer_id}')
+        return self._api.request("GET", f"{self._path}/{customer_id}")
 
-    def get_by_email(self, email: str) -> dict:
+    def get_by_email(self, email: str) -> Optional[dict]:
         """
         Retrieves the customer information for a user with the specific email
 
@@ -94,7 +101,7 @@ class Customers:
 
         return self.get_by_query(email=email)
 
-    def get_by_creation_date(self, date: datetime) -> dict:
+    def get_by_creation_date(self, date: datetime) -> Optional[dict]:
         """
         Retrieve customers information for a specific creation date
 
@@ -104,12 +111,15 @@ class Customers:
             response (dict): formatted customers information (JSON)
         """
 
-        data = self.get_by_query(created_at_min=day_start(date),
-                                 created_at_max=day_end(date),
-                                 )
+        data = self.get_by_query(
+            created_at_min=day_start(date),
+            created_at_max=day_end(date),
+        )
         return data
 
-    def get_by_creation_dates(self, start_date: datetime, end_date: datetime = None) -> dict:
+    def get_by_creation_dates(
+        self, start_date: datetime, end_date: Optional[datetime] = None
+    ) -> Optional[dict]:
         """
         Retrieve customers information for a creation date range
 
@@ -123,9 +133,10 @@ class Customers:
         if end_date is None:
             end_date = datetime.now(timezone.utc)
 
-        data = self.get_by_query(created_at_min=day_start(start_date),
-                                 created_at_max=day_end(end_date),
-                                 )
+        data = self.get_by_query(
+            created_at_min=day_start(start_date),
+            created_at_max=day_end(end_date),
+        )
         return data
 
     # TODO: Implement parsing to dataframes

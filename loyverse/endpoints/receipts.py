@@ -14,21 +14,31 @@ from datetime import datetime, timezone
 from loyverse.api import Api
 from loyverse.utils.dates import utc_isoformat, day_start, day_end
 from loyverse.endpoints.fields import receipt as fields
+from typing import Optional
 
 
 class Receipts:
-
     def __init__(self, api: Api):
         self._api = api
-        self._path = 'receipts'
+        self._path = "receipts"
 
-    def get_by_query(self, receipt_numbers: list = None, since_receipt_number: str = None,
-                     before_receipt_number: str = None, store_id: str = None, order: str = None, source: str = None,
-                     updated_at_min: datetime = None, updated_at_max: datetime = None,
-                     created_at_min: datetime = None, created_at_max: datetime = None, limit: int = 250,
-                     cursor: str = None) -> dict:
+    def get_by_query(
+        self,
+        receipt_numbers: Optional[list] = None,
+        since_receipt_number: Optional[str] = None,
+        before_receipt_number: Optional[str] = None,
+        store_id: Optional[str] = None,
+        order: Optional[str] = None,
+        source: Optional[str] = None,
+        updated_at_min: Optional[datetime] = None,
+        updated_at_max: Optional[datetime] = None,
+        created_at_min: Optional[datetime] = None,
+        created_at_max: Optional[datetime] = None,
+        limit: int = 250,
+        cursor: Optional[str] = None,
+    ) -> Optional[dict]:
         """
-        Retrieves receipts that respect the specific query criteria passed in. A detailed description of the query 
+        Retrieves receipts that respect the specific query criteria passed in. A detailed description of the query
         parameters is available `here <https://developer.loyverse.com/docs/#tag/Receipts/paths/~1receipts/get>`_.
 
         Args:
@@ -51,46 +61,46 @@ class Receipts:
         params = dict()
 
         if receipt_numbers is not None:
-            params['receipt_numbers'] = ','.join(receipt_numbers)
+            params["receipt_numbers"] = ",".join(receipt_numbers)
 
         if since_receipt_number is not None:
-            params['since_receipt_number'] = since_receipt_number
+            params["since_receipt_number"] = since_receipt_number
 
         if before_receipt_number is not None:
-            params['before_receipt_number'] = before_receipt_number
+            params["before_receipt_number"] = before_receipt_number
 
         if store_id is not None:
-            params['store_id'] = store_id
+            params["store_id"] = store_id
 
         if order is not None:
-            params['order'] = order
+            params["order"] = order
 
         if source is not None:
-            params['source'] = source
+            params["source"] = source
 
         if updated_at_min is not None:
-            params['updated_at_min'] = utc_isoformat(updated_at_min)
+            params["updated_at_min"] = utc_isoformat(updated_at_min)
 
         if updated_at_max is not None:
-            params['updated_at_max'] = utc_isoformat(updated_at_max)
+            params["updated_at_max"] = utc_isoformat(updated_at_max)
 
         if created_at_min is not None:
-            params['created_at_min'] = utc_isoformat(created_at_min)
+            params["created_at_min"] = utc_isoformat(created_at_min)
 
         if created_at_max is not None:
-            params['created_at_max'] = utc_isoformat(created_at_max)
+            params["created_at_max"] = utc_isoformat(created_at_max)
 
         if limit is not None:
-            params['limit'] = limit
+            params["limit"] = limit
 
         if cursor is not None:
-            params['cursor'] = cursor
+            params["cursor"] = cursor
 
-        response = self._api.request('GET', self._path, params=params)
+        response = self._api.request("GET", self._path, params=params)
 
         return response
 
-    def get_by_id(self, receipt_id: str) -> dict:
+    def get_by_id(self, receipt_id: str) -> Optional[dict]:
         """
         Retrieves the receipts information for a specific receipt ID
 
@@ -100,9 +110,9 @@ class Receipts:
             response (dict): formatted receipt information (JSON)
         """
 
-        return self._api.request('GET', f'{self._path}/{receipt_id}')
+        return self._api.request("GET", f"{self._path}/{receipt_id}")
 
-    def get_by_date(self, date: datetime) -> dict:
+    def get_by_date(self, date: datetime) -> Optional[dict]:
         """
         Retrieve receipts information for a specific day
 
@@ -112,12 +122,15 @@ class Receipts:
             response (dict): formatted receipts information (JSON)
         """
 
-        data = self.get_by_query(created_at_min=day_start(date),
-                                 created_at_max=day_end(date),
-                                 )
+        data = self.get_by_query(
+            created_at_min=day_start(date),
+            created_at_max=day_end(date),
+        )
         return data
 
-    def get_by_dates(self, start_date: datetime, end_date: datetime = None) -> dict:
+    def get_by_dates(
+        self, start_date: datetime, end_date: Optional[datetime] = None
+    ) -> Optional[dict]:
         """
         Retrieves receipts information for a specific date interval.
 
@@ -131,13 +144,16 @@ class Receipts:
         if end_date is None:
             end_date = datetime.now(timezone.utc)
 
-        data = self.get_by_query(created_at_min=day_start(start_date),
-                                 created_at_max=day_end(end_date),
-                                 )
+        data = self.get_by_query(
+            created_at_min=day_start(start_date),
+            created_at_max=day_end(end_date),
+        )
         return data
 
     @staticmethod
-    def _receipt_to_dataframes(receipt: dict):
+    def _receipt_to_dataframes(
+        receipt: dict,
+    ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """
         Formats one receipts object into three dataframes, containing receipts and items information.
 
@@ -149,15 +165,19 @@ class Receipts:
             payments_df (pandas.Dataframe): receipt payments information
         """
 
-        if 'receipts' in receipt:
-            raise ValueError('Invalid receipt object passed in, should not contain - receipts - field')
+        if "receipts" in receipt:
+            raise ValueError(
+                "Invalid receipt object passed in, should not contain - receipts - field"
+            )
 
-        id_key = 'receipt_number'
+        id_key = "receipt_number"
 
-        receipt_df = pd.DataFrame({key: receipt[key] for key in fields.receipt}, index=[0])
+        receipt_df = pd.DataFrame(
+            {key: receipt[key] for key in fields.receipt}, index=[0]
+        )
 
         items_df = []
-        for line_item in receipt['line_items']:
+        for line_item in receipt["line_items"]:
             item = {key: line_item[key] for key in fields.item}
             item[id_key] = receipt[id_key]
             item = pd.DataFrame(item, index=[0])
@@ -166,10 +186,10 @@ class Receipts:
         items_df = pd.concat(items_df)
 
         payments_df = []
-        for payment_item in receipt['payments']:
+        for payment_item in receipt["payments"]:
             payment = {key: payment_item[key] for key in fields.payment}
             payment[id_key] = receipt[id_key]
-            details = payment_item['payment_details']
+            details = payment_item["payment_details"]
 
             if details is None:
                 payment_details = {key: None for key in fields.payment_details}
@@ -185,7 +205,9 @@ class Receipts:
         return receipt_df, items_df, payments_df
 
     @staticmethod
-    def to_dataframes(response: dict):
+    def to_dataframes(
+        response: dict,
+    ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """
         Formats receipts API return data into three dataframes (receipts, items, payments)
 
@@ -201,8 +223,8 @@ class Receipts:
         items = []
         payments = []
 
-        if 'receipts' in response:
-            receipts_in = response['receipts']
+        if "receipts" in response:
+            receipts_in = response["receipts"]
         else:
             receipts_in = [response]
 
